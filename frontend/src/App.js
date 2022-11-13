@@ -9,12 +9,15 @@ function App() {
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [lastPong, setLastPong] = useState(null);
   const [message, setMessage] = useState("");
+  const [response, setResponse] = useState("");
 
   useEffect(() => {
     socket.on("connect", () => {
       setIsConnected(true);
     });
-
+    socket.on("chat message", (message) => {
+      setResponse(message);
+    })
     socket.on("disconnect", () => {
       setIsConnected(false);
     });
@@ -29,10 +32,6 @@ function App() {
       socket.off("pong");
     };
   }, []);
-
-  const sendPing = () => {
-    socket.emit("ping");
-  };
 
   const sendMessageHandler = (e) => {
     e.preventDefault();
@@ -59,6 +58,7 @@ function App() {
           Send
         </button>
       </form>
+      <div>Holding Test Data: {response}</div>
       {/* TODO: Create Header Component for Page Navigation*/}
       <Routes>
         {/* TODO: Create Homepage Component*/}
