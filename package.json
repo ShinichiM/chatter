@@ -1,0 +1,25 @@
+{
+  "name": "chatter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"cd frontend && npm start\" \"cd backend && npm start\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShinichiM/chatter.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ShinichiM/chatter/issues"
+  },
+  "homepage": "https://github.com/ShinichiM/chatter#readme",
+  "dependencies": {
+    "concurrently": "^7.5.0",
+    "express": "^4.18.1"
+  }
+}
