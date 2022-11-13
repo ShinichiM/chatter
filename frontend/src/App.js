@@ -8,6 +8,7 @@ const socket = io.connect("http://localhost:3001");
 function App() {
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [lastPong, setLastPong] = useState(null);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -32,13 +33,32 @@ function App() {
   const sendPing = () => {
     socket.emit("ping");
   };
+
+  const sendMessageHandler = (e) => {
+    e.preventDefault();
+    if (message) {
+      socket.emit("chat message", message);
+      setMessage("");
+    }
+  };
+
+  const messageChangeHandler = (e) => {
+    e.preventDefault();
+    setMessage(e.target.value);
+    // console.log(message)
+  };
   return (
     <Router>
-      <div>
-        <p>Connected: {"" + isConnected}</p>
-        <p>Last pong: {lastPong || "-"}</p>
-        <button onClick={sendPing}>Send ping</button>
-      </div>
+      <form>
+        <textarea
+          onChange={messageChangeHandler}
+          defaultValue={message}
+          placeholder="..."
+        />
+        <button type="submit" onClick={sendMessageHandler}>
+          Send
+        </button>
+      </form>
       {/* TODO: Create Header Component for Page Navigation*/}
       <Routes>
         {/* TODO: Create Homepage Component*/}

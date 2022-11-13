@@ -3,9 +3,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 const cors = require("cors");
-
 const { createServer } = require("http");
-// const server = http.createServer(app);
 const { Server } = require("socket.io");
 
 app.use(cors());
@@ -20,6 +18,9 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   console.log(`⚡: ${socket.id} user just connected!`);
+  socket.on("chat message", (message) => {
+    console.log("message: ", message);
+  });
   socket.on("disconnect", () => {
     console.log("🔥: A user disconnected");
   });
@@ -30,10 +31,6 @@ app.get("/api", (req, res) => {
     message: "Hello",
   });
 });
-
-// io.on("connection", (socket) => {
-//   console.log("a user connected");
-// });
 
 httpServer.listen(PORT, () => {
   console.log(`listening on ${PORT}`);
