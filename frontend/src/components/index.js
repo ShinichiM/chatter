@@ -1,7 +1,6 @@
-import Home from "./Home";
 import Chat from "./Chat";
-import Auth from "./Auth";
-import Message from "./Message";
-import Header from "./Header";
+import Messages from "./Messages";
+import Join from "./Join";
+import InfoBar from "./InfoBar";
 
-export { Home, Chat, Auth, Message, Header };
+export default { Chat, Messages, Join, InfoBar };
