@@ -7,6 +7,8 @@ import Messages from "./Messages";
 import InfoBar from "./InfoBar";
 import Input from "./Input";
 
+import "../App.css";
+
 const connectionOptions = {
   "force new connection": true,
   reconnectionAttempts: "Infinity",
@@ -21,7 +23,7 @@ const Chat = ({ location }) => {
   const [room, setRoom] = useState("");
   const [users, setUsers] = useState("");
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState("");
+  const [messages, setMessages] = useState([]);
 
   const END_POINT = "localhost:3001";
 
@@ -36,7 +38,7 @@ const Chat = ({ location }) => {
       }
     });
     return () => {
-      socket.emit("disconnect");
+      // socket.emit("disconnect");
       socket.off();
     };
   }, [END_POINT, location.search]);
@@ -55,7 +57,7 @@ const Chat = ({ location }) => {
     if (message) {
       socket.emit("sendMessage", message, () => setMessage(""));
     }
-    console.log(message, messages);
+    // console.log(message, messages);
   };
 
   return (

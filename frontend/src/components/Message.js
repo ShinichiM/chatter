@@ -1,4 +1,5 @@
 import React from "react";
+import "../App.css";
 
 const Message = ({ message: { text, user }, name }) => {
   let isSentByCurrentUser = false;
