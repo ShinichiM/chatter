@@ -5,7 +5,13 @@ const PORT = process.env.PORT || 3001;
 const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-const { addUser, getUser, getUsersInRoom, removeUser } = require("./User");
+const {
+  addUser,
+  getUser,
+  getUsersInRoom,
+  removeUser,
+  addRoom,
+} = require("./User");
 
 app.use(cors());
 
@@ -20,22 +26,60 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   console.log(`⚡: ${socket.id} user just connected!`);
   socket.on("join", ({ name, room }) => {
-    const { error, user } = addUser({ id: socket.id, name, room });
-    socket.emit("joinMessage", {
-      user: "admin",
-      text: `${user.name}, welcome to room ${user.room}.`,
-    });
-    socket.broadcast.emit("joinMessage", {
-      user: "admin",
-      text: `${user.name}, has joined.`,
+    const data = new Promise((resolve, reject) => {
+      resolve("successful");
+      reject(alert("Error on Socket Join Event"));
     });
 
-    socket.join(user.room);
+    data
+    .then(() => {
+      const currentUsersInRoom = getUsersInRoom(room);
+      if (!currentUsersInRoom.filter(user => user === name)) {
+        return addUser({ id: socket.id, name, room })
+      }
+      // console.log(' --- GET USRE RETURN -- ', getUser(socket.id));
+      return getUser(socket.id)
+    })
+      .then(({ user }) => {
+        console.log(" - - Server User -> ", user);
+        console.log(getUsersInRoom(user.room));
 
-    io.to(user.room).emit("roomData", {
-      room: user.room,
-      users: getUsersInRoom(user.room),
-    });
+        socket.emit("joinMessage", {
+          user: "admin",
+          text: `${user.name}, welcome to room ${user.room}`,
+        });
+        socket.broadcast.emit("joinMessage", {
+          user: "admin",
+          text: `${user.name}, has joined.`,
+        });
+        socket.join(user.room);
+
+        io.to(user.room).emit("roomData", {
+          room: user.room,
+          users: getUsersInRoom(user.room),
+        });
+      });
+    // addUser({ id: socket.id, name, room })
+    // const { user } = addUser({ id: socket.id, name, room });
+
+    // const currrentUsers = getUsersInRoom();
+    // console.log(currrentUsers);
+
+    // socket.emit("joinMessage", {
+    //   user: "admin",
+    //   text: `${user.name}, welcome to room ${user.room}.`,
+    // });
+    // socket.broadcast.emit("joinMessage", {
+    //   user: "admin",
+    //   text: `${user.name}, has joined.`,
+    // });
+
+    // socket.join(user.room);
+
+    // io.to(user.room).emit("roomData", {
+    //   room: user.room,
+    //   users: getUsersInRoom(user.room),
+    // });
   });
 
   socket.on("sendMessage", (message, callback) => {
