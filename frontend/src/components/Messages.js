@@ -4,7 +4,6 @@ import "../App.css";
 
 const Messages = ({ messages, name }) => {
   // console.log(messages);
-  console.log(name);
   return (
     <div>
       {messages.map((message, i) => {

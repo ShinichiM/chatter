@@ -31,24 +31,26 @@ const Chat = ({ location }) => {
     const { name, room } = queryString.parse(location.search);
     setName(name);
     setRoom(room);
-
+    console.log(' why does htis render twice ')
     socket.emit("join", { name, room }, (error) => {
       if (error) {
         alert(error);
       }
     });
     return () => {
-      // socket.emit("disconnect");
+      // socket.disconnect();
       socket.off();
     };
   }, [END_POINT, location.search]);
 
   useEffect(() => {
+    console.log(' does this render twitce ?? ')
     socket.on("message", (message) => {
       setMessages([...messages, message]);
     });
     socket.on("roomData", ({ users }) => {
       setUsers(users);
+      console.log(" roomData ", users);
     });
   }, [messages, users]);
 

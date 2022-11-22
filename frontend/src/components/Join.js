@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const Join = () => {
@@ -8,7 +8,7 @@ const Join = () => {
   return (
     <div className="joinOuterContainer">
       <div className="joinInnerContainer">
-        <h1 className="heading">Join</h1>
+        <h1 className="heading">Sign In</h1>
         <div>
           <input
             placeholder="Name"
@@ -35,6 +35,9 @@ const Join = () => {
             Sign In
           </button>
         </Link>
+      </div>
+      <div>
+        <h1>Current Rooms</h1>
       </div>
     </div>
   );
