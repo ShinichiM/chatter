@@ -14,11 +14,11 @@ const {
 } = require("./User");
 const mongoose = require("mongoose");
 require("dotenv").config();
-// const mongoDB = `mongodb+srv://admin:${process.env.MONGODB_USER_PW}@cluster0.a98jphv.mongodb.net/?retryWrites=true&w=majority`;
+
 const mongoDB = `mongodb+srv://admin:${process.env.MONGODB_USER_PW}@cluster0.a98jphv.mongodb.net/?retryWrites=true&w=majority`;
+
 const userController = require("./controller/user-controller");
 
-console.log(process.env.MONGODB_USER_PW);
 app.use(cors());
 
 const httpServer = createServer();
