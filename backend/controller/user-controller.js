@@ -1,21 +1,56 @@
-const User = require("../models/User"); 
+const User = require("../models/User");
 
 const userController = {
-  addUser(req, res) {
-    User.create(req.body)
-      .then((response) => res.json(response))
-      .catch((err) => console.error(err));
+  addUser: async function addUser(name, socketID, messages = []) {
+    try {
+      const userData = await User.create({
+        name: name,
+        socketID: socketID,
+        messages: messages,
+      });
+      return userData;
+    } catch (error) {
+      console.error(error);
+    }
+    // return await User.create({
+    //   name: name,
+    //   socketID: socketID,
+    //   rooms: rooms,
+    //   messages: messages,
+    // })
+    //   .then((response) => console.log(response))
+    //   .catch((err) => console.error(err));
   },
-  removeUser(req, res) {
+  removeUser: async function removeUser(socketID) {
+    try {
+      const userData = await User.deleteOne({ socketID: socketID });
+      return userData;
+    } catch (error) {
+      console.error(error);
+    }
     // api parameter requires id
-    User.deleteOne({ id: req.params.id })
-      .then((response) => res.json(response))
-      .catch((err) => res.json(err));
+    // return await User.deleteOne({ socketID: socketId })
+    //   .then((response) => console.log(response))
+    //   .catch((err) => console.log(err));
   },
-  getUser(req, res) {
-    User.find({ id: req.params.id})
-      .then((response) => res.json(response))
-      .catch((err) => res.json(err));
+  getUser: async function getUser(socketID) {
+    try {
+      const user = await User.find({ socketID: socketID });
+      return user;
+    } catch (error) {
+      console.error(error);
+    }
+    //   return await User.find({ socketID: socketId })
+    //     .then((response) => console.log(response))
+    //     .catch((err) => console.log(err));
+  },
+  getUsers: async function getUsers(socketID, name) {
+    try {
+      const users = User.findOne({ socketID: socketID, name: name });
+      return users;
+    } catch (error) {
+      console.error(error);
+    }
   },
 };
 

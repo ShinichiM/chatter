@@ -1,23 +1,29 @@
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3001;
-
-const cors = require("cors");
-const { createServer } = require("http");
-const { Server } = require("socket.io");
-const {
-  addUser,
-  getUser,
-  getUsersInRoom,
-  removeUser,
-  addRoom,
-} = require("./User");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const cors = require("cors");
+
+const {
+  addUser,
+  removeUser,
+  getUser,
+  getUsers,
+} = require("./controller/user-controller");
+const { getUsersInRoom, addRoom } = require("./controller/room-controller");
+
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+// const {
+//   addUser,
+//   getUser,
+//   getUsersInRoom,
+//   removeUser,
+//   addRoom,
+// } = require("./User");
 
 const mongoDB = `mongodb+srv://admin:${process.env.MONGODB_USER_PW}@cluster0.a98jphv.mongodb.net/?retryWrites=true&w=majority`;
-
-const userController = require("./controller/user-controller");
 
 app.use(cors());
 
@@ -45,16 +51,18 @@ io.on("connection", (socket) => {
     });
 
     data
-      .then(() => {
-        const currentUsersInRoom = getUsersInRoom(room);
-        if (!currentUsersInRoom.filter((user) => user === name)) {
-          return addUser({ id: socket.id, name, room });
+      .then(() => getUsers(socket.id, name))
+      .then((currentUser) => {
+        if (!currentUser) {
+          return addUser(name, socket.id);
         }
-        // console.log(' --- GET USRE RETURN -- ', getUser(socket.id));
         return getUser(socket.id);
       })
-      .then(({ user }) => {
-        console.log(" - - Server User -> ", user);
+      .then((userData) => {
+        console.log(userData);
+        addRoom(room, userData.id);
+
+        // console.log(" - - Server User -> ", user);
         console.log(getUsersInRoom(user.room));
 
         socket.emit("joinMessage", {
@@ -76,6 +84,7 @@ io.on("connection", (socket) => {
 
   socket.on("sendMessage", (message, callback) => {
     const user = getUser(socket.id);
+
     io.to(user.room).emit("message", { user: user.name, text: message });
     io.to(user.room).emit("roomData", {
       room: user.room,
