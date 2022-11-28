@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const { getRoom } = require("../controller/room-controller");
 
 const userController = {
   addUser: async function addUser(name, socketID, messages = []) {
@@ -35,7 +36,7 @@ const userController = {
   },
   getUser: async function getUser(socketID) {
     try {
-      const user = await User.find({ socketID: socketID });
+      const user = await User.findOne({ socketID: socketID });
       return user;
     } catch (error) {
       console.error(error);
@@ -46,8 +47,19 @@ const userController = {
   },
   getUsers: async function getUsers(socketID, name) {
     try {
-      const users = User.findOne({ socketID: socketID, name: name });
+      const users = User.find({});
       return users;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  updateUserRoom: async function updateUserRoom(userID, roomID) {
+    try {
+      const roomData = getRoom();
+      const updatedUser = await User.findByIdAndUpdate(userID, {
+        rooms: [roomID],
+      });
+      return updatedUser;
     } catch (error) {
       console.error(error);
     }

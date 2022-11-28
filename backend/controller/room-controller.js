@@ -31,6 +31,14 @@ const roomController = {
     //     .then((response) => res.json(response))
     //     .catch((err) => res.json(err));
   },
+  getRoom: async function getRoom(roomID) {
+    try {
+      const roomData = await Room.findById(roomID);
+      return roomData;
+    } catch (error) {
+      console.error(error);
+    }
+  },
 };
 
 module.exports = roomController;

@@ -10,6 +10,7 @@ const {
   removeUser,
   getUser,
   getUsers,
+  updateUserRoom,
 } = require("./controller/user-controller");
 const { getUsersInRoom, addRoom } = require("./controller/room-controller");
 
@@ -51,7 +52,7 @@ io.on("connection", (socket) => {
     });
 
     data
-      .then(() => getUsers(socket.id, name))
+      .then(() => getUser(socket.id))
       .then((currentUser) => {
         if (!currentUser) {
           return addUser(name, socket.id);
@@ -59,12 +60,15 @@ io.on("connection", (socket) => {
         return getUser(socket.id);
       })
       .then((userData) => {
-        console.log(userData);
-        addRoom(room, userData.id);
-
-        // console.log(" - - Server User -> ", user);
-        console.log(getUsersInRoom(user.room));
-
+        const userRooms = userData.rooms;
+        if (!userRooms.filter((availableRoom) => availableRoom === room)[0]) {
+          return addRoom(room, userData.id).then((roomData) =>
+            updateUserRoom(userData.id, roomData.id)
+          );
+        }
+        return userData;
+      })
+      .then((userData) => {
         socket.emit("joinMessage", {
           user: "admin",
           text: `${user.name}, welcome to room ${user.room}`,
