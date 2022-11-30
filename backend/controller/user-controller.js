@@ -13,14 +13,6 @@ const userController = {
     } catch (error) {
       console.error(error);
     }
-    // return await User.create({
-    //   name: name,
-    //   socketID: socketID,
-    //   rooms: rooms,
-    //   messages: messages,
-    // })
-    //   .then((response) => console.log(response))
-    //   .catch((err) => console.error(err));
   },
   removeUser: async function removeUser(socketID) {
     try {
@@ -29,23 +21,16 @@ const userController = {
     } catch (error) {
       console.error(error);
     }
-    // api parameter requires id
-    // return await User.deleteOne({ socketID: socketId })
-    //   .then((response) => console.log(response))
-    //   .catch((err) => console.log(err));
   },
-  getUser: async function getUser(socketID) {
+  getUserBySocketId: async function getUser(socketID) {
     try {
       const user = await User.findOne({ socketID: socketID });
       return user;
     } catch (error) {
       console.error(error);
     }
-    //   return await User.find({ socketID: socketId })
-    //     .then((response) => console.log(response))
-    //     .catch((err) => console.log(err));
   },
-  getUsers: async function getUsers(socketID, name) {
+  getUsers: async function getUsers() {
     try {
       const users = User.find({});
       return users;
@@ -55,11 +40,18 @@ const userController = {
   },
   updateUserRoom: async function updateUserRoom(userID, roomID) {
     try {
-      const roomData = getRoom();
       const updatedUser = await User.findByIdAndUpdate(userID, {
         rooms: [roomID],
       });
       return updatedUser;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  getUserById: async function getUserById(userId) {
+    try {
+      const userData = await User.findById(userId).lean();
+      return userData;
     } catch (error) {
       console.error(error);
     }

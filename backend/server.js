@@ -4,25 +4,20 @@ const PORT = process.env.PORT || 3001;
 const mongoose = require("mongoose");
 require("dotenv").config();
 const cors = require("cors");
+var util = require("util");
 
 const {
   addUser,
   removeUser,
-  getUser,
+  getUserBySocketId,
   getUsers,
   updateUserRoom,
+  getUserById,
 } = require("./controller/user-controller");
 const { getUsersInRoom, addRoom } = require("./controller/room-controller");
 
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-// const {
-//   addUser,
-//   getUser,
-//   getUsersInRoom,
-//   removeUser,
-//   addRoom,
-// } = require("./User");
 
 const mongoDB = `mongodb+srv://admin:${process.env.MONGODB_USER_PW}@cluster0.a98jphv.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -46,18 +41,12 @@ mongoose
 io.on("connection", (socket) => {
   console.log(`⚡: ${socket.id} user just connected!`);
   socket.on("join", ({ name, room }) => {
-    const data = new Promise((resolve, reject) => {
-      resolve("Join Successful");
-      reject(alert("Error on Socket Join Event"));
-    });
-
-    data
-      .then(() => getUser(socket.id))
+    getUserBySocketId(socket.id)
       .then((currentUser) => {
         if (!currentUser) {
           return addUser(name, socket.id);
         }
-        return getUser(socket.id);
+        return getUserBySocketId(socket.id);
       })
       .then((userData) => {
         const userRooms = userData.rooms;
@@ -71,23 +60,30 @@ io.on("connection", (socket) => {
       .then((userData) => {
         socket.emit("joinMessage", {
           user: "admin",
-          text: `${user.name}, welcome to room ${user.room}`,
+          text: `${userData.name}, welcome to room ${room}`,
         });
         socket.broadcast.emit("joinMessage", {
           user: "admin",
-          text: `${user.name}, has joined.`,
+          text: `${userData.name}, has joined.`,
         });
-        socket.join(user.room);
-
-        io.to(user.room).emit("roomData", {
-          room: user.room,
-          users: getUsersInRoom(user.room),
+        socket.join(room);
+      })
+      .then(() => getUsersInRoom(room))
+      .then((usersInRoom) => {
+        console.log(usersInRoom, "Room Data w/ user data populated");
+        return usersInRoom;
+      })
+      .then((users) => {
+        console.log(users, " - - - - USR ARR - - -");
+        io.to(room).emit("roomData", {
+          room: room,
+          users: users,
         });
       });
   });
 
   socket.on("sendMessage", (message, callback) => {
-    const user = getUser(socket.id);
+    const user = getUserBySocketId(socket.id);
 
     io.to(user.room).emit("message", { user: user.name, text: message });
     io.to(user.room).emit("roomData", {

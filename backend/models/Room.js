@@ -6,7 +6,7 @@ const roomSchema = new Schema({
     required: true,
     unique: true,
   },
-  users: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  users: { type: Schema.Types.ObjectId, ref: "User" },
 });
 
 const Room = model("Room", roomSchema);
