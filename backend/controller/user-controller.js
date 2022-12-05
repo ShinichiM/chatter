@@ -2,7 +2,7 @@ const User = require("../models/User");
 const { getRoom } = require("../controller/room-controller");
 
 const userController = {
-  addUser: async function addUser(name, socketID, messages = []) {
+  createUser: async function addUser(name, socketID, messages = []) {
     try {
       const userData = await User.create({
         name: name,

@@ -13,7 +13,7 @@ const roomController = {
       console.error(error);
     }
   },
-  addRoom: async function addRoom(roomNumber, userID) {
+  createRoom: async function addRoom(roomNumber, userID) {
     try {
       const roomData = await Room.create({
         number: roomNumber,
@@ -27,6 +27,14 @@ const roomController = {
   getRoom: async function getRoom(roomID) {
     try {
       const roomData = await Room.findById(roomID);
+      return roomData;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  getRoomByRoomNumber: async function getRoomByRoomNumber(roomNumber) {
+    try {
+      const roomData = await Room.find({ number: roomNumber });
       return roomData;
     } catch (error) {
       console.error(error);

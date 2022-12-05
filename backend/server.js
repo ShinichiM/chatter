@@ -7,17 +7,23 @@ const cors = require("cors");
 var util = require("util");
 
 const {
-  addUser,
+  createUser,
   removeUser,
   getUserBySocketId,
   getUsers,
   updateUserRoom,
   getUserById,
 } = require("./controller/user-controller");
-const { getUsersInRoom, addRoom } = require("./controller/room-controller");
+const {
+  getUsersInRoom,
+  createRoom,
+  getRoom,
+  getRoomByRoomNumber,
+} = require("./controller/room-controller");
 
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const { createBrotliCompress } = require("zlib");
 
 const mongoDB = `mongodb+srv://admin:${process.env.MONGODB_USER_PW}@cluster0.a98jphv.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -44,18 +50,37 @@ io.on("connection", (socket) => {
     getUserBySocketId(socket.id)
       .then((currentUser) => {
         if (!currentUser) {
-          return addUser(name, socket.id);
+          return createUser(name, socket.id);
         }
-        return getUserBySocketId(socket.id);
+        return currentUser;
       })
       .then((userData) => {
-        const userRooms = userData.rooms;
-        if (!userRooms.filter((availableRoom) => availableRoom === room)[0]) {
-          return addRoom(room, userData.id).then((roomData) =>
-            updateUserRoom(userData.id, roomData.id)
-          );
-        }
-        return userData;
+        return getRoomByRoomNumber(room)
+          .then((roomData) => {
+            if (!roomData) {
+              return createRoom(room, userData.id);
+            }
+            return roomData.filter(
+              (existingRoom) => existingRoom.number === room
+            )[0];
+          })
+          .then((roomData) => {
+            const userHasRoom = userData.rooms.filter(
+              (existingRoom) => existingRoom === room
+            )[0];
+            if (!userHasRoom) {
+              console.log(
+                "userdata - - ",
+                userData.id,
+                userData,
+                " room Data - -",
+                roomData.id,
+                roomData
+              );
+              return updateUserRoom(userData.id, roomData.id);
+            }
+            return userData;
+          });
       })
       .then((userData) => {
         socket.emit("joinMessage", {
@@ -74,7 +99,7 @@ io.on("connection", (socket) => {
         return usersInRoom;
       })
       .then((users) => {
-        console.log(users, " - - - - USR ARR - - -");
+        // console.log(users, " - - - - USR ARR - - -");
         io.to(room).emit("roomData", {
           room: room,
           users: users,
