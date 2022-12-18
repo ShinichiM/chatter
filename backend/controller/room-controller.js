@@ -4,7 +4,6 @@ const roomController = {
   // returns array of users assocaited with the roomNumber
   getUsersInRoom: async function getUsersInRoom(roomNumber) {
     try {
-      const usersInRoom = [];
       const roomData = await Room.find({ number: roomNumber }).populate(
         "users"
       );
@@ -13,12 +12,15 @@ const roomController = {
       console.error(error);
     }
   },
-  createRoom: async function addRoom(roomNumber, userID) {
+  createRoom: async function createRoom(roomNumber, userID) {
     try {
       const roomData = await Room.create({
         number: roomNumber,
-        users: [userID],
-      });
+      })
+      // .then((data) => {
+      //   data.users.push(userID);
+      // });
+      // roomData.save();
       return roomData;
     } catch (error) {
       console.error(error);
@@ -40,6 +42,11 @@ const roomController = {
       console.error(error);
     }
   },
+  // updateUsersInRoom: async function updateUsersInRoom(roomId, userId) {
+  //   try {
+  //     const roomData = await Room.update( {_id: roomId, { $push: { users: userId } } } )
+  //   }
+  // }
 };
 
 module.exports = roomController;

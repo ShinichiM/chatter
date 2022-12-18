@@ -22,9 +22,9 @@ const userController = {
       console.error(error);
     }
   },
-  getUserBySocketId: async function getUser(socketID) {
+  getUserByName: async function getUser(username) {
     try {
-      const user = await User.findOne({ socketID: socketID });
+      const user = await User.findOne({ name: username });
       return user;
     } catch (error) {
       console.error(error);

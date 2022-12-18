@@ -9,7 +9,7 @@ var util = require("util");
 const {
   createUser,
   removeUser,
-  getUserBySocketId,
+  getUserByName,
   getUsers,
   updateUserRoom,
   getUserById,
@@ -47,64 +47,54 @@ mongoose
 io.on("connection", (socket) => {
   console.log(`⚡: ${socket.id} user just connected!`);
   socket.on("join", ({ name, room }) => {
-    getUserBySocketId(socket.id)
-      .then((currentUser) => {
-        if (!currentUser) {
-          return createUser(name, socket.id);
-        }
-        return currentUser;
-      })
-      .then((userData) => {
-        return getRoomByRoomNumber(room)
-          .then((roomData) => {
-            if (!roomData) {
-              return createRoom(room, userData.id);
-            }
-            return roomData.filter(
-              (existingRoom) => existingRoom.number === room
-            )[0];
-          })
-          .then((roomData) => {
-            const userHasRoom = userData.rooms.filter(
-              (existingRoom) => existingRoom === room
-            )[0];
-            if (!userHasRoom) {
-              console.log(
-                "userdata - - ",
-                userData.id,
-                userData,
-                " room Data - -",
-                roomData.id,
-                roomData
-              );
-              return updateUserRoom(userData.id, roomData.id);
-            }
-            return userData;
-          });
-      })
-      .then((userData) => {
-        socket.emit("joinMessage", {
-          user: "admin",
-          text: `${userData.name}, welcome to room ${room}`,
-        });
-        socket.broadcast.emit("joinMessage", {
-          user: "admin",
-          text: `${userData.name}, has joined.`,
-        });
-        socket.join(room);
-      })
-      .then(() => getUsersInRoom(room))
-      .then((usersInRoom) => {
-        console.log(usersInRoom, "Room Data w/ user data populated");
-        return usersInRoom;
-      })
-      .then((users) => {
-        // console.log(users, " - - - - USR ARR - - -");
-        io.to(room).emit("roomData", {
-          room: room,
-          users: users,
-        });
+    const currentUser = getUserByName(name).then((currentUser) => {
+      if (!currentUser) {
+        return createUser(name, socket.id);
+      }
+      return currentUser;
+    });
+    const currentRoom = getRoomByRoomNumber(room).then((roomData) => {
+      // check if room exists in DB
+      let existingRoom = false;
+      roomData.forEach((savedRoom) => {
+        if (savedRoom.number === String(room)) existingRoom = true;
       });
+
+      // create Room
+      if (!existingRoom) {
+        return createRoom(room, currentUser.id);
+      }
+      // return existing room
+      return roomData.filter((existingRoom) => existingRoom.number === room)[0];
+    });
+
+    socket.emit("joinMessage", {
+      user: "admin",
+      text: `${name}, welcome to room ${room}`,
+    });
+    socket.broadcast.emit("joinMessage", {
+      user: "admin",
+      text: `${name}, has joined.`,
+    });
+
+    Promise.all([currentUser, currentRoom]).then((data) => {
+      const userData = data[0];
+      const roomData = data[1];
+      const userHasRoom = userData.rooms.filter(
+        (existingRoom) => existingRoom === room
+      )[0];
+      roomData.users.push(userData.id);
+      roomData.save();
+      if (!userHasRoom) {
+        userData.rooms.push(roomData.id);
+        userData.save();
+      }
+      socket.join(room);
+      io.to(room).emit("roomData", {
+        room: room,
+        users: roomData.users,
+      });
+    });
   });
 
   socket.on("sendMessage", (message, callback) => {
@@ -116,6 +106,7 @@ io.on("connection", (socket) => {
       users: getUsersInRoom(user.room),
     });
   });
+
   socket.on("disconnect", () => {
     const user = removeUser(socket.id);
     if (user) {
